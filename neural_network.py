@@ -75,8 +75,6 @@ class NeuralNetwork:
         acc = []
         loss = []
         n_batches = inputs.shape[1] // batch_size
-        #inputs = np.array_split(inputs, n_batches, axis=1)
-        #y = np.array_split(y, n_batches, axis=1)
         for epoch in range(epoches):
             epoch_acc = []
             epoch_loss = []
@@ -89,28 +87,17 @@ class NeuralNetwork:
                 epoch_loss.append(self.calculate_loss(pred, y_batch))
             acc.append(np.mean(epoch_acc))
             loss.append(np.mean(epoch_loss))
-            if epoch % 5 == 0:
+            if epoch % 50 == 0:
                 print("Epoch " + str(epoch) + ", accuracy: ", acc[epoch])
         return acc, loss
     
     def test(self, X, y, batch_size):
         inputs = X.T
-        y = self.one_hot(y)
         acc = []
-        loss = []
-        if batch_size == 1:
-            inputs = np.array_split(inputs, inputs.shape[1], axis=1)
-            y = np.array_split(y, y.shape[1], axis=1)
-        else:
-            inputs = np.array_split(inputs, inputs.shape[1] / batch_size, axis=1)
-            y = np.array_split(y, batch_size, axis=1)
-        for i in range(len(inputs)):
-            pred = self.forward(inputs[i])
-            acc.append(self.calculate_accuracy(pred, y[i]))
-            loss.append(self.calculate_loss(pred, y[i]))
-        return acc, loss
-
-
-
-
-
+        n_batches = inputs.shape[1] // batch_size
+        for i in range(n_batches):
+            input_batch = inputs[:,(i*batch_size):((i+1)*(batch_size))]
+            y_batch = y[:,(i*batch_size):((i+1)*(batch_size))]
+            pred = self.forward(input_batch)
+            acc.append(self.calculate_accuracy(pred, y_batch))
+        return acc
